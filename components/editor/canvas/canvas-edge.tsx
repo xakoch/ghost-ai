@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import { Trash2 } from "lucide-react"
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from "@xyflow/react"
 import type { EdgeProps } from "@xyflow/react"
 import { useMutation } from "@liveblocks/react"
@@ -35,6 +36,10 @@ export function CanvasEdgeComponent({
     },
     [id]
   )
+
+  const deleteEdge = useMutation(({ storage }) => {
+    storage.get("flow").get("edges").delete(id)
+  }, [id])
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -107,6 +112,7 @@ export function CanvasEdgeComponent({
           }}
           className="nodrag nopan"
         >
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {isEditing ? (
             <input
               autoFocus
@@ -165,6 +171,22 @@ export function CanvasEdgeComponent({
               double-click to label
             </div>
           ) : null}
+          {selected && !isEditing && (
+            <button
+              title="Delete edge"
+              onClick={(e) => {
+                e.stopPropagation()
+                deleteEdge()
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="flex h-6 w-6 items-center justify-center rounded-full border border-border-default bg-bg-surface/95 text-text-muted shadow-xl backdrop-blur-xl transition-colors hover:text-red-400"
+              style={{ cursor: "pointer" }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
+          </div>
         </div>
       </EdgeLabelRenderer>
     </>

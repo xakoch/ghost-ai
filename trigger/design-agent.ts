@@ -1,5 +1,5 @@
 import { task } from "@trigger.dev/sdk/v3";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText, tool } from "ai";
 import { z } from "zod";
 import { LiveObject } from "@liveblocks/client";
@@ -158,7 +158,7 @@ export const designAgent = task({
   retry: { maxAttempts: 2 },
   run: async (payload: { prompt: string; roomId: string; userId: string }) => {
     const lb = getLiveblocks();
-    const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
+    const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API });
 
     await lb
       .setPresence(payload.roomId, {
@@ -193,7 +193,7 @@ export const designAgent = task({
       }
 
       const result = await generateText({
-        model: google("gemini-2.5-flash"),
+        model: openrouter(process.env.OPENROUTER_MODEL || "google/gemini-2.5-flash"),
         system: buildSystemPrompt(),
         prompt: `User request: ${payload.prompt}\n\n${canvasContext}`,
         tools: canvasTools,

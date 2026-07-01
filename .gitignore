@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# trigger.dev local dev state and build artifacts
+/.trigger/
+
+# playwright mcp output
+/.playwright-mcp/

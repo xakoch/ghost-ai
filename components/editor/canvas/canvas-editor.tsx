@@ -138,8 +138,12 @@ export function CanvasEditor({ projectId, pendingTemplate, onTemplateImported, o
       const target = e.target as HTMLElement
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return
       const selNodes = rfNodesRef.current.filter((n) => n.selected)
-      const selEdges = rfEdgesRef.current.filter((ed) => ed.selected)
-      if (selNodes.length || selEdges.length) onDelete({ nodes: selNodes, edges: selEdges })
+      const selNodeIds = new Set(selNodes.map((n) => n.id))
+      // Include edges attached to deleted nodes so they don't become orphans.
+      const edgesToDelete = rfEdgesRef.current.filter(
+        (ed) => ed.selected || selNodeIds.has(ed.source) || selNodeIds.has(ed.target)
+      )
+      if (selNodes.length || edgesToDelete.length) onDelete({ nodes: selNodes, edges: edgesToDelete })
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)

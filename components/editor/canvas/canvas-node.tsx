@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
+import { Trash2 } from "lucide-react"
 import { Handle, Position, NodeResizer, NodeToolbar } from "@xyflow/react"
 import type { NodeProps } from "@xyflow/react"
 import { useMutation } from "@liveblocks/react"
@@ -132,6 +133,18 @@ export function CanvasNodeComponent({ id, data, selected }: NodeProps<CanvasNode
     liveData.set("textColor", colorText)
   }, [id])
 
+  const deleteNode = useMutation(({ storage }) => {
+    const flow = storage.get("flow")
+    const edges = flow.get("edges")
+    const connectedEdgeIds: string[] = []
+    edges.forEach((edge, edgeId) => {
+      const live = edge as unknown as LiveObject<{ source: string; target: string }>
+      if (live.get("source") === id || live.get("target") === id) connectedEdgeIds.push(edgeId)
+    })
+    for (const edgeId of connectedEdgeIds) edges.delete(edgeId)
+    flow.get("nodes").delete(id)
+  }, [id])
+
   const startEditing = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     setIsEditing(true)
@@ -199,6 +212,19 @@ export function CanvasNodeComponent({ id, data, selected }: NodeProps<CanvasNode
               onSelect={updateNodeColor}
             />
           ))}
+          <div className="mx-0.5 h-4 w-px bg-border-default" />
+          <button
+            className="nodrag nopan flex h-5 w-5 items-center justify-center rounded-full text-text-muted transition-colors hover:text-red-400"
+            title="Delete node"
+            onClick={(e) => {
+              e.stopPropagation()
+              deleteNode()
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         </div>
       </NodeToolbar>
 
